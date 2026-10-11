@@ -1,0 +1,441 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Networking Basics Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: one centered column, one packet (question) on screen at a time, a 15-segment link bar on top. */
+:root {
+  --bg: #eef2f6;
+  --surface: #ffffff;
+  --fg: #14202b;
+  --muted: #55667a;
+  --line: #cbd5e0;
+  --accent: #1f5fbf;
+  --accent-fg: #ffffff;
+  --ok: #17794d;
+  --ok-bg: #e2f4ea;
+  --bad: #b83232;
+  --bad-bg: #fbe7e7;
+  --seg: #d3dce6;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1620;
+    --surface: #16212e;
+    --fg: #e6edf5;
+    --muted: #93a4b8;
+    --line: #2b3a4c;
+    --accent: #6aa5ff;
+    --accent-fg: #0e1620;
+    --ok: #58d39a;
+    --ok-bg: #12382a;
+    --bad: #ff8a8a;
+    --bad-bg: #3d1c1f;
+    --seg: #26354a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1620;
+  --surface: #16212e;
+  --fg: #e6edf5;
+  --muted: #93a4b8;
+  --line: #2b3a4c;
+  --accent: #6aa5ff;
+  --accent-fg: #0e1620;
+  --ok: #58d39a;
+  --ok-bg: #12382a;
+  --bad: #ff8a8a;
+  --bad-bg: #3d1c1f;
+  --seg: #26354a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  padding-inline: 16px;
+  padding-block: 28px 48px;
+  min-height: 100vh;
+}
+.wrap { max-width: 640px; margin-inline: auto; display: flex; flex-direction: column; gap: 20px; }
+h1, h2 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.1; }
+p { margin: 0; }
+.mono { font-family: var(--font-mono); }
+.label { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.btn {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border: 0;
+  border-radius: 6px;
+  padding: 12px 20px;
+  font-weight: 600;
+  min-height: 44px;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+.btn.ghost:hover { border-color: var(--accent); filter: none; }
+.row { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* Start screen */
+.start { display: flex; flex-direction: column; gap: 20px; padding-block: 12px; }
+.start h1 { font-size: clamp(2.2rem, 8vw, 3.4rem); font-weight: 800; }
+.start .lede { color: var(--muted); max-width: 52ch; }
+.topics { display: flex; flex-wrap: wrap; gap: 8px; }
+.topics span {
+  font-family: var(--font-mono); font-size: 13px;
+  border: 1px solid var(--line); background: var(--surface);
+  padding: 4px 10px; border-radius: 4px;
+}
+
+/* Link bar: one segment per question */
+.bar { display: grid; grid-template-columns: repeat(15, 1fr); gap: 4px; }
+.bar i { height: 8px; border-radius: 2px; background: var(--seg); display: block; }
+.bar i.ok { background: var(--ok); }
+.bar i.bad { background: var(--bad); }
+.bar i.now { background: var(--accent); }
+.meta { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+/* Question card */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 24px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+.card h2 { font-size: clamp(1.4rem, 4.6vw, 1.8rem); font-weight: 600; }
+.opts { display: flex; flex-direction: column; gap: 10px; }
+.opt {
+  display: flex; align-items: flex-start; gap: 14px; text-align: left;
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  min-height: 48px;
+}
+.opt .key {
+  font-family: var(--font-mono); font-weight: 500; font-size: 14px;
+  width: 28px; height: 28px; flex: none;
+  display: grid; place-items: center;
+  border: 1px solid var(--line); border-radius: 4px; background: var(--surface);
+}
+.opt .txt { min-width: 0; padding-top: 3px; overflow-wrap: anywhere; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt:disabled { cursor: default; }
+.opt.ok { background: var(--ok-bg); border-color: var(--ok); }
+.opt.ok .key { background: var(--ok); color: var(--bg); border-color: var(--ok); }
+.opt.bad { background: var(--bad-bg); border-color: var(--bad); }
+.opt.bad .key { background: var(--bad); color: var(--bg); border-color: var(--bad); }
+.opt.dim { opacity: 0.6; }
+
+.feedback { min-height: 24px; font-weight: 600; }
+.feedback.ok { color: var(--ok); }
+.feedback.bad { color: var(--bad); }
+.foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.hint { color: var(--muted); font-size: 13px; }
+
+/* Results */
+.score { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.score .big { font-family: var(--font-display); font-weight: 800; font-size: clamp(3rem, 14vw, 5rem); line-height: 1; font-variant-numeric: tabular-nums; }
+.score .pct { font-family: var(--font-mono); color: var(--muted); }
+.review { display: flex; flex-direction: column; gap: 12px; }
+.miss { border: 1px solid var(--line); border-left: 4px solid var(--bad); border-radius: 6px; padding: 12px 14px; background: var(--bg); display: flex; flex-direction: column; gap: 4px; }
+.miss .q { font-weight: 600; }
+.miss .a { font-size: 14px; color: var(--muted); overflow-wrap: anywhere; }
+.miss .a b { color: var(--ok); font-weight: 600; }
+
+@media (max-width: 420px) { .card { padding: 18px; } }
+@media (prefers-reduced-motion: no-preference) {
+  .opt, .btn { transition: border-color 0.12s, background-color 0.12s, filter 0.12s; }
+}
+</style>
+
+<main class="wrap">
+  <section id="start" class="start">
+    <p class="label">15 questions · multiple choice</p>
+    <h1>Networking Basics Quiz</h1>
+    <p class="lede">Test yourself on LANs and WANs, topologies, protocols, network devices and online security. Pick an answer to see right away whether it was correct.</p>
+    <div class="topics" aria-label="Topics covered">
+      <span>LAN / WAN</span><span>Topologies</span><span>HTTP / FTP</span><span>Router / Switch</span><span>Firewall</span><span>Cloud</span>
+    </div>
+    <div class="row"><button class="btn" id="startBtn" type="button">Start quiz</button></div>
+  </section>
+
+  <section id="quiz" hidden>
+    <div class="wrap">
+      <div class="meta">
+        <span class="label" id="qCount">Question 1 of 15</span>
+        <span class="label" id="liveScore">Score 0</span>
+      </div>
+      <div class="bar" id="bar" role="progressbar" aria-label="Quiz progress" aria-valuemin="0" aria-valuemax="15" aria-valuenow="0"></div>
+      <div class="card">
+        <h2 id="qText"></h2>
+        <div class="opts" id="opts" role="group" aria-labelledby="qText"></div>
+        <p class="feedback" id="feedback" aria-live="polite"></p>
+        <div class="foot">
+          <span class="hint">Keys: A–D to answer, Enter for next</span>
+          <button class="btn" id="nextBtn" type="button" hidden>Next question</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="result" hidden>
+    <div class="wrap">
+      <p class="label">Quiz complete</p>
+      <div class="score"><span class="big" id="rScore"></span><span class="pct" id="rPct"></span></div>
+      <h2 id="rMsg"></h2>
+      <div class="row">
+        <button class="btn" id="againBtn" type="button">Retake quiz</button>
+        <button class="btn ghost" id="missedBtn" type="button" hidden>Retry missed only</button>
+      </div>
+      <div class="review" id="review"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  var QUESTIONS = [
+    { q: "What does LAN stand for?", o: ["Local Access Network", "Local Area Network", "Large Area Network", "Linked Area Network"], a: 1 },
+    { q: "Which device forwards data packets between different networks?", o: ["Switch", "Router", "Hub", "Repeater"], a: 1 },
+    { q: "Which network covers a large geographical area such as a country?", o: ["LAN", "PAN", "WAN", "SAN"], a: 2 },
+    { q: "Which topology connects all computers to a central device?", o: ["Bus", "Star", "Ring", "Mesh"], a: 1 },
+    { q: "What does URL stand for?", o: ["Universal Routing Link", "Uniform Resource Locator", "Unified Resource Link", "Universal Resource Locator"], a: 1 },
+    { q: "Which protocol is mainly used to access web pages?", o: ["FTP", "SMTP", "HTTP", "POP3"], a: 2 },
+    { q: "Which Internet service is used to send and receive electronic messages?", o: ["Email", "FTP", "VoIP", "Streaming"], a: 0 },
+    { q: "Which device converts digital signals to analogue signals and vice versa?", o: ["Router", "Modem", "Switch", "Hub"], a: 1 },
+    { q: "What is the main function of a switch?", o: ["Connects networks together", "Connects devices within a network", "Filters websites", "Provides internet access"], a: 1 },
+    { q: "What does Wi-Fi allow users to do?", o: ["Print documents", "Connect wirelessly to a network", "Encrypt files", "Store data online"], a: 1 },
+    { q: "Which protocol is used for transferring files over a network?", o: ["FTP", "HTTP", "DNS", "SMTP"], a: 0 },
+    { q: "What is phishing?", o: ["A type of antivirus software", "A networking device", "An attempt to trick users into revealing personal information", "A file transfer protocol"], a: 2 },
+    { q: "What is cloud computing?", o: ["A weather forecasting system", "Storing and accessing data via the Internet", "A network topology", "A type of router"], a: 1 },
+    { q: "What is the purpose of a firewall?", o: ["Increase internet speed", "Store backups", "Protect a network from unauthorized access", "Connect computers"], a: 2 },
+    { q: "Which of the following is an example of a web browser?", o: ["Gmail", "Outlook", "Google Chrome", "WhatsApp"], a: 2 }
+  ];
+  var TOTAL = QUESTIONS.length;
+  var LETTERS = ["A", "B", "C", "D"];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var screens = { start: $("start"), quiz: $("quiz"), result: $("result") };
+
+  var run = [];      // current run: [{ id, q, opts:[{t,c}], pick, right }]
+  var pos = 0;
+  var score = 0;
+  var answered = false;
+  var screen = "start";
+
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function show(name) {
+    screen = name;
+    for (var k in screens) screens[k].hidden = (k !== name);
+    window.scrollTo(0, 0);
+  }
+
+  function begin(ids) {
+    run = shuffle(ids).map(function (id) {
+      var src = QUESTIONS[id];
+      return {
+        id: id,
+        q: src.q,
+        opts: shuffle(src.o.map(function (t, i) { return { t: t, c: i === src.a }; })),
+        pick: -1,
+        right: false
+      };
+    });
+    pos = 0; score = 0;
+    renderBar();
+    show("quiz");
+    renderQuestion();
+  }
+
+  function renderBar() {
+    var bar = $("bar");
+    bar.style.gridTemplateColumns = "repeat(" + run.length + ", 1fr)";
+    bar.innerHTML = "";
+    for (var i = 0; i < run.length; i++) {
+      var s = document.createElement("i");
+      if (i < pos) s.className = run[i].right ? "ok" : "bad";
+      else if (i === pos) s.className = "now";
+      bar.appendChild(s);
+    }
+    bar.setAttribute("aria-valuemax", String(run.length));
+    bar.setAttribute("aria-valuenow", String(pos));
+  }
+
+  function renderQuestion() {
+    var item = run[pos];
+    answered = false;
+    $("qCount").textContent = "Question " + (pos + 1) + " of " + run.length;
+    $("liveScore").textContent = "Score " + score;
+    $("qText").textContent = item.q;
+    $("feedback").textContent = "";
+    $("feedback").className = "feedback";
+    $("nextBtn").hidden = true;
+    $("nextBtn").textContent = (pos === run.length - 1) ? "See results" : "Next question";
+    renderBar();
+
+    var box = $("opts");
+    box.innerHTML = "";
+    item.opts.forEach(function (o, i) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "opt";
+      b.dataset.i = String(i);
+      var k = document.createElement("span");
+      k.className = "key";
+      k.textContent = LETTERS[i];
+      var t = document.createElement("span");
+      t.className = "txt";
+      t.textContent = o.t;
+      b.appendChild(k);
+      b.appendChild(t);
+      b.addEventListener("click", function () { choose(i); });
+      box.appendChild(b);
+    });
+  }
+
+  function choose(i) {
+    if (answered) return;
+    answered = true;
+    var item = run[pos];
+    item.pick = i;
+    item.right = item.opts[i].c;
+    if (item.right) score++;
+
+    var btns = $("opts").querySelectorAll(".opt");
+    var correctIdx = 0;
+    item.opts.forEach(function (o, n) { if (o.c) correctIdx = n; });
+    btns.forEach(function (b, n) {
+      b.disabled = true;
+      if (n === correctIdx) {
+        b.classList.add("ok");
+        b.querySelector(".key").textContent = "✓";
+      } else if (n === i) {
+        b.classList.add("bad");
+        b.querySelector(".key").textContent = "✕";
+      } else {
+        b.classList.add("dim");
+      }
+    });
+
+    var fb = $("feedback");
+    if (item.right) {
+      fb.textContent = "Correct.";
+      fb.className = "feedback ok";
+    } else {
+      fb.textContent = "Not quite. The answer is " + LETTERS[correctIdx] + ": " + item.opts[correctIdx].t;
+      fb.className = "feedback bad";
+    }
+    $("liveScore").textContent = "Score " + score;
+    pos_mark();
+    $("nextBtn").hidden = false;
+    $("nextBtn").focus();
+  }
+
+  // colour the current segment as soon as it is answered
+  function pos_mark() {
+    var segs = $("bar").children;
+    if (segs[pos]) segs[pos].className = run[pos].right ? "ok" : "bad";
+  }
+
+  function next() {
+    if (!answered) return;
+    if (pos < run.length - 1) {
+      pos++;
+      renderQuestion();
+    } else {
+      finish();
+    }
+  }
+
+  function finish() {
+    var n = run.length;
+    var pct = Math.round((score / n) * 100);
+    $("rScore").textContent = score + "/" + n;
+    $("rPct").textContent = pct + "%";
+    var msg;
+    if (score === n) msg = "Perfect score. Every packet delivered.";
+    else if (pct >= 80) msg = "Strong result. Review the misses below.";
+    else if (pct >= 60) msg = "Solid start. A little more practice will lock it in.";
+    else msg = "Keep going. Check the answers below and try again.";
+    $("rMsg").textContent = msg;
+
+    var missed = run.filter(function (r) { return !r.right; });
+    var rev = $("review");
+    rev.innerHTML = "";
+    if (missed.length) {
+      var h = document.createElement("p");
+      h.className = "label";
+      h.textContent = "Questions to review (" + missed.length + ")";
+      rev.appendChild(h);
+      missed.forEach(function (r) {
+        var d = document.createElement("div");
+        d.className = "miss";
+        var q = document.createElement("p");
+        q.className = "q";
+        q.textContent = r.q;
+        var a = document.createElement("p");
+        a.className = "a";
+        var mine = r.opts[r.pick].t;
+        var good = r.opts.filter(function (o) { return o.c; })[0].t;
+        a.appendChild(document.createTextNode("You chose: " + mine + " • Correct: "));
+        var bold = document.createElement("b");
+        bold.textContent = good;
+        a.appendChild(bold);
+        d.appendChild(q);
+        d.appendChild(a);
+        rev.appendChild(d);
+      });
+    }
+    $("missedBtn").hidden = missed.length === 0;
+    $("missedBtn").onclick = function () { begin(missed.map(function (r) { return r.id; })); };
+    show("result");
+  }
+
+  function allIds() { return QUESTIONS.map(function (_, i) { return i; }); }
+
+  $("startBtn").addEventListener("click", function () { begin(allIds()); });
+  $("againBtn").addEventListener("click", function () { begin(allIds()); });
+  $("nextBtn").addEventListener("click", next);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (screen !== "quiz") return;
+    var k = e.key.toLowerCase();
+    var idx = "abcd".indexOf(k);
+    if (idx === -1 && k >= "1" && k <= "4") idx = Number(k) - 1;
+    if (idx > -1 && !answered && run[pos] && idx < run[pos].opts.length) {
+      e.preventDefault();
+      choose(idx);
+    } else if (answered && (e.key === "Enter" || e.key === "ArrowRight")) {
+      e.preventDefault();
+      next();
+    }
+  });
+})();
+</script>
+
+</body></html>
